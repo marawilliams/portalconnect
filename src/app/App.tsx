@@ -59,26 +59,104 @@ function AppContent({ isDark }: { isDark: boolean }) {
   const [repliedIds, setRepliedIds] = useState<Set<number>>(new Set());
 
   const [attractMode, setAttractMode] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [timeoutWarning, setTimeoutWarning] = useState(false);
+  const [warningSeconds, setWarningSeconds] = useState(10);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const IDLE_MS = 60_000;
+  const warningTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const IDLE_MS = 30_000;
+
+  const clearTimers = useCallback(() => {
+    if (idleTimer.current) {
+      clearTimeout(idleTimer.current);
+      idleTimer.current = null;
+    }
+    if (warningTimer.current) {
+      clearInterval(warningTimer.current);
+      warningTimer.current = null;
+    }
+  }, []);
+
+  const resetWarning = useCallback(() => {
+    setTimeoutWarning(false);
+    setWarningSeconds(10);
+    if (warningTimer.current) {
+      clearInterval(warningTimer.current);
+      warningTimer.current = null;
+    }
+  }, []);
+
+  const exit = useCallback(() => {
+    setHistory(["language"]);
+    setAttractMode(true);
+  }, []);
+
+  const startIdleTimer = useCallback(() => {
+    if (busy || attractMode) return;
+    if (idleTimer.current) {
+      clearTimeout(idleTimer.current);
+    }
+    idleTimer.current = setTimeout(() => {
+      setTimeoutWarning(true);
+      setWarningSeconds(10);
+      warningTimer.current = setInterval(() => {
+        setWarningSeconds((current) => {
+          if (current <= 1) {
+            clearTimers();
+            exit();
+            return 0;
+          }
+          return current - 1;
+        });
+      }, 1000);
+    }, IDLE_MS);
+  }, [attractMode, busy, clearTimers, exit]);
 
   const resetIdle = useCallback(() => {
-    if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setAttractMode(true), IDLE_MS);
-  }, []);
+    if (busy || attractMode) return;
+    if (idleTimer.current) {
+      clearTimeout(idleTimer.current);
+    }
+    resetWarning();
+    startIdleTimer();
+  }, [attractMode, busy, resetWarning, startIdleTimer]);
 
   useEffect(() => {
     const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
-    const handler = () => { if (!attractMode) resetIdle(); };
+    const handler = () => {
+      if (!attractMode && !busy) {
+        if (timeoutWarning) {
+          resetWarning();
+        }
+        resetIdle();
+      }
+    };
     events.forEach((e) => window.addEventListener(e, handler, { passive: true }));
     resetIdle();
     return () => {
       events.forEach((e) => window.removeEventListener(e, handler));
-      if (idleTimer.current) clearTimeout(idleTimer.current);
+      clearTimers();
     };
-  }, [resetIdle, attractMode]);
+  }, [resetIdle, attractMode, busy, timeoutWarning, resetWarning, clearTimers]);
+
+  useEffect(() => {
+    if (busy) {
+      clearTimers();
+      resetWarning();
+      return;
+    }
+    if (!attractMode) {
+      resetIdle();
+    }
+  }, [busy, attractMode, resetIdle, resetWarning, clearTimers]);
 
   const screen = history[history.length - 1];
+
+  useEffect(() => {
+    if (!["recordInvitation", "viewInvitation", "expressInterest"].includes(screen)) {
+      setBusy(false);
+    }
+  }, [screen]);
 
   const go = useCallback((s: Screen) => {
     setHistory((prev) => [...prev, s]);
@@ -112,6 +190,23 @@ function AppContent({ isDark }: { isDark: boolean }) {
 
   return (
     <div className={`min-h-screen ${isDark ? "app-dark" : "app-light"}`}>
+      {timeoutWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
+          <div className="max-w-sm w-full bg-white dark:bg-[#111] rounded-3xl border border-[var(--app-border)] p-6 text-center shadow-2xl">
+            <p className="text-sm font-semibold text-[#e07b00] uppercase tracking-[0.18em] mb-4">Inactivity warning</p>
+            <p className="text-[var(--app-text)] mb-3">You will be signed out in {warningSeconds} second{warningSeconds === 1 ? "" : "s"} unless you tap the screen.</p>
+            <button
+              onClick={() => {
+                resetWarning();
+                resetIdle();
+              }}
+              className="mt-4 w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-3 rounded-2xl font-medium"
+            >
+              Stay signed in
+            </button>
+          </div>
+        </div>
+      )}
       {attractMode && (
         <AttractScreen onWake={() => { setAttractMode(false); resetIdle(); }} />
       )}
@@ -137,7 +232,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("recordInvitation")} onBack={hasBack ? goBack : undefined} onExit={exit} />
       )}
       {screen === "recordInvitation" && (
-        <RecordInvitationScreen {...lang} categories={categories} invitationText={invitationText} onTextChange={setInvitationText} initialDone={recordingDone} initialDuration={recordingDuration} onSave={(dur) => { setRecordingDone(true); setRecordingDuration(dur); go("stayConnected"); }} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <RecordInvitationScreen {...lang} categories={categories} invitationText={invitationText} onTextChange={setInvitationText} initialDone={recordingDone} initialDuration={recordingDuration} onSave={(dur) => { setRecordingDone(true); setRecordingDuration(dur); go("stayConnected"); }} onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy} />
       )}
       {screen === "stayConnected" && (
         <StayConnectedScreen {...lang} email={email} onEmailChange={setEmail} onPublish={() => go("invitationLive")} onBack={hasBack ? goBack : undefined} onExit={exit} />
@@ -152,7 +247,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
         />
       )}
       {screen === "viewInvitation" && currentInvitation && (
-        <ViewInvitationScreen {...lang} invitation={currentInvitation} onExpressInterest={() => go("confirmConnect")} onBack={hasBack ? goBack : undefined} onExit={exit} replyCount={repliedIds.size} alreadyReplied={repliedIds.has(currentInvitation.id)} />
+        <ViewInvitationScreen {...lang} invitation={currentInvitation} onExpressInterest={() => go("confirmConnect")} onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy} replyCount={repliedIds.size} alreadyReplied={repliedIds.has(currentInvitation.id)} />
       )}
       {screen === "confirmConnect" && currentInvitation && (
         <ConfirmConnectScreen {...lang} invitation={currentInvitation} onConfirm={() => go("expressInterest")} onBack={hasBack ? goBack : undefined} onExit={exit} />
@@ -160,7 +255,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
       {screen === "expressInterest" && (
         <ExpressInterestScreen {...lang}
           onSend={() => { if (currentInvitation) markReplied(currentInvitation.id); go("interestSent"); }}
-          onBack={hasBack ? goBack : undefined} onExit={exit}
+          onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy}
         />
       )}
       {screen === "interestSent" && (

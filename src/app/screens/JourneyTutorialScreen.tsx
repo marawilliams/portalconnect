@@ -189,7 +189,7 @@ function Step2Preview() {
             <span className="text-white text-xs font-medium">REC</span>
           </div>
           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-lg">
-            {fmt(elapsed)} / 3:00
+            {fmt(elapsed)} / 1:00
           </div>
         </div>
       )}

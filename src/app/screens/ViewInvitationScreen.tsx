@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, User, Calendar, AlertTriangle, PlayCircle } from "lucide-react";
 import { TopBar } from "../components/TopBar";
-import { SimulatedPlayer } from "../components/SimulatedPlayer";
 import type { Invitation } from "./ExploreInvitationsScreen";
 
 const REPLY_LIMIT = 3;
+const DEFAULT_INVITATION_VIDEO = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
 interface Props {
   invitation: Invitation;
@@ -13,13 +13,19 @@ interface Props {
   onBack: () => void;
   onExit: () => void;
   onLanguageChange?: (lang: string) => void;
+  onBusyChange?: (busy: boolean) => void;
   replyCount: number;
   alreadyReplied: boolean;
 }
 
-export function ViewInvitationScreen({ invitation, language, onLanguageChange, onExpressInterest, onBack, onExit, replyCount, alreadyReplied }: Props) {
+export function ViewInvitationScreen({ invitation, language, onLanguageChange, onExpressInterest, onBack, onExit, onBusyChange, replyCount, alreadyReplied }: Props) {
   const [videoWatched, setVideoWatched] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const atLimit = replyCount >= REPLY_LIMIT;
+
+  useEffect(() => {
+    onBusyChange?.(videoPlaying);
+  }, [videoPlaying, onBusyChange]);
 
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col">
@@ -69,22 +75,19 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
 
         {/* Video player */}
         <div className="mb-2">
-          <SimulatedPlayer
-            durationSeconds={12}
-            accentColor="#e07b00"
-            onComplete={() => setVideoWatched(true)}
-            placeholderContent={
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[var(--app-surface)]">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: invitation.avatarColor + "44" }}
-                >
-                  <User className="w-10 h-10 text-[var(--app-text-50)]" strokeWidth={1} />
-                </div>
-                <p className="text-[var(--app-text-50)] text-sm px-6 text-center italic">"{invitation.description}"</p>
-              </div>
-            }
-          />
+          <div className="relative rounded-xl overflow-hidden bg-[var(--app-surface)] border border-[var(--app-border)]" style={{ aspectRatio: "16/9" }}>
+            <video
+              src={invitation.videoUrl ?? DEFAULT_INVITATION_VIDEO}
+              controls
+              className="w-full h-full object-cover"
+              onPlay={() => setVideoPlaying(true)}
+              onPause={() => setVideoPlaying(false)}
+              onEnded={() => {
+                setVideoPlaying(false);
+                setVideoWatched(true);
+              }}
+            />
+          </div>
         </div>
 
         {/* Watch prompt */}

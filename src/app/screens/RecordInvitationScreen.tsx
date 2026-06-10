@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { Video, RotateCcw } from "lucide-react";
 import { TopBar } from "../components/TopBar";
-import { SimulatedPlayer } from "../components/SimulatedPlayer";
+import { LiveVideoRecorder } from "../components/LiveVideoRecorder";
 import { useVideoRecorder } from "../hooks/useVideoRecorder";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
   onBack: () => void;
   onExit: () => void;
   onLanguageChange?: (lang: string) => void;
+  onBusyChange?: (busy: boolean) => void;
   language: string;
   initialDone?: boolean;
   initialDuration?: number;
@@ -96,9 +98,14 @@ function getSuggestions(categories: string[]): string[] {
 
 export function RecordInvitationScreen({
   categories, invitationText, onTextChange, onSave, onBack, onExit, language, onLanguageChange,
-  initialDone = false, initialDuration = 0,
+  onBusyChange, initialDone = false, initialDuration = 0,
 }: Props) {
-  const { recordState, elapsed, startRecording, stopRecording, retake, fmt } = useVideoRecorder({ maxSeconds: 180, initialDone, initialDuration });
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const { videoRef, playbackUrl, error, recordState, elapsed, startRecording, stopRecording, retake, fmt } = useVideoRecorder({ maxSeconds: 60, initialDone, initialDuration });
+
+  useEffect(() => {
+    onBusyChange?.(recordState === "recording" || videoPlaying);
+  }, [recordState, videoPlaying, onBusyChange]);
 
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col">
@@ -114,36 +121,16 @@ export function RecordInvitationScreen({
 
         <div className="flex gap-6">
           <div className="flex-1 flex flex-col gap-3">
-            {recordState === "done" ? (
-              <SimulatedPlayer durationSeconds={elapsed || 5} accentColor="#e07b00" />
-            ) : (
-              <div
-                className={`relative rounded-xl overflow-hidden flex items-center justify-center ${
-                  recordState === "recording"
-                    ? "bg-[var(--app-surface)] ring-4 ring-[#e07b00]"
-                    : "bg-[var(--app-surface)] border border-[var(--app-border)]"
-                }`}
-                style={{ aspectRatio: "16/9" }}
-              >
-                {recordState === "idle" && (
-                  <Video className="w-12 h-12 text-[var(--app-text-20)]" strokeWidth={1} />
-                )}
-                {recordState === "recording" && (
-                  <>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-[#e07b00]/20 animate-ping" />
-                    </div>
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/60 px-2 py-1 rounded-lg">
-                      <div className="w-2 h-2 bg-[#e05555] rounded-full animate-pulse" />
-                      <span className="text-white text-xs">REC</span>
-                    </div>
-                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-lg">
-                      {fmt(elapsed)} / 3:00
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            <LiveVideoRecorder
+              state={recordState}
+              elapsed={elapsed}
+              maxSeconds={60}
+              fmt={fmt}
+              videoRef={videoRef}
+              playbackUrl={playbackUrl}
+              error={error}
+              onVideoActiveChange={setVideoPlaying}
+            />
 
             {recordState === "idle" && (
               <button

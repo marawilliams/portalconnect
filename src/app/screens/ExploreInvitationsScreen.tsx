@@ -12,6 +12,7 @@ export interface Invitation {
   description: string;
   avatarColor: string;
   timeline: string;
+  videoUrl?: string;
 }
 
 export const MOCK_INVITATIONS: Invitation[] = [
@@ -330,7 +331,7 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col">
       <TopBar onBack={onBack} onExit={onExit} language={language} onLanguageChange={onLanguageChange} />
-      <div className="flex-1 px-8 pt-20 pb-8 max-w-2xl mx-auto w-full">
+      <div className="flex-1 px-4 pt-20 pb-8 max-w-[min(1440px,100%)] mx-auto w-full">
         <h2 className="text-[var(--app-text)] text-center mb-1">Browse Invitations</h2>
         <p className="text-center text-xs text-[var(--app-text-30)] mb-3">
           Showing results for: <span className="text-[#e07b00]">{selectedCategories.join(", ")}</span>
@@ -361,7 +362,7 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
             <p className="text-[var(--app-text-25)] text-xs mt-2">Check back soon, new invitations are added all the time.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((inv) => {
               const viewed = viewedIds.has(inv.id);
               const replied = repliedIds.has(inv.id);
@@ -369,7 +370,11 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
               return (
                 <div
                   key={inv.id}
-                  className={`rounded-2xl overflow-hidden border-2 transition-all duration-200 ${
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onView(inv)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onView(inv); } }}
+                  className={`rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#e07b00] ${
                     replied
                       ? "border-[#e07b00] bg-[#e07b00]/10"
                       : viewed
@@ -426,18 +431,17 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
                         }`}>{t}</span>
                       ))}
                     </div>
-                    <button
-                      onClick={() => onView(inv)}
-                      className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                    <div className="text-right">
+                      <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
                         replied
-                          ? "bg-[#e07b00] text-white hover:bg-[#c96e00]"
+                          ? "bg-[#e07b00] text-white"
                           : viewed
-                          ? "border border-[#e07b00]/60 text-[#e07b00] hover:bg-[#e07b00]/10"
-                          : "border border-[var(--app-border)] text-[var(--app-text-60)] hover:border-[#e07b00]/50 hover:text-[var(--app-text)]"
-                      }`}
-                    >
-                      {replied ? "View Again" : viewed ? "View Again" : "View Invitation"}
-                    </button>
+                          ? "bg-[#e07b00]/10 text-[#e07b00]"
+                          : "bg-[var(--app-surface)] text-[var(--app-text-60)]"
+                      }`}>
+                        {replied ? "View Again" : viewed ? "View Again" : "Tap to View"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
