@@ -59,6 +59,7 @@ export function ThankYouScreen({ onRestart, videoUrl }: Props) {
   const [stripUrl, setStripUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
 
   useEffect(() => {
     setFrames([]);
@@ -136,131 +137,155 @@ export function ThankYouScreen({ onRestart, videoUrl }: Props) {
   useEffect(() => {
     if (frames.length !== 3) return;
 
-    let objectUrl: string | null = null;
     setQrLoading(true);
+    setQrError(null);
 
     buildStripDataUrl(frames, frameRatio).then(async (dataUrl) => {
       try {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        objectUrl = URL.createObjectURL(blob);
-        setStripUrl(objectUrl);
+        setStripUrl(dataUrl);
 
-        const qr = await QRCode.toDataURL(objectUrl, {
-          width: 160,
-          margin: 1,
-          color: { dark: "#000000", light: "#ffffff" },
-        });
-        setQrDataUrl(qr);
+        try {
+          const qr = await QRCode.toDataURL(dataUrl, {
+            width: 160,
+            margin: 1,
+            color: { dark: "#000000", light: "#ffffff" },
+            errorCorrectionLevel: "L",
+            typeNumber: 40,
+          });
+          setQrDataUrl(qr);
+        } catch (innerErr) {
+          console.warn("QR generation from image data failed", innerErr);
+          setQrError("Your strip is too large to embed in a QR code. Scan this page URL instead.");
+          const pageUrl = window.location.href;
+          const qr = await QRCode.toDataURL(pageUrl, {
+            width: 160,
+            margin: 1,
+            color: { dark: "#000000", light: "#ffffff" },
+            errorCorrectionLevel: "L",
+            typeNumber: 40,
+          });
+          setQrDataUrl(qr);
+        }
       } catch (err) {
         console.warn("QR generation failed", err);
+        setQrError("QR generation failed. You can still download the strip below.");
       } finally {
         setQrLoading(false);
       }
     });
-
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
   }, [frames, frameRatio]);
 
-  if (showStrip) {
-    return (
-      <div className="min-h-screen bg-[var(--app-surface)] flex flex-col items-center justify-center px-8 text-center">
-        <div className="max-w-xs w-full">
+if (showStrip) {
+  return (
+    <div className="min-h-screen bg-[var(--app-surface)] flex flex-col items-center justify-center px-8 py-6 text-center">
+      {/* 1. Header (Stays Centered at the top) */}
 
-          <p className="text-[var(--app-text-60)] text-xs uppercase tracking-widest mb-4">
-            Portal Connect
-          </p>
+      {/* 2. Main Container (Splits into 2 Columns side-by-side) */}
+      <div className="flex flex-col md:flex-row items-start justify-center gap-8 w-full max-w-4xl text-left">
+        
+        {/* LEFT COLUMN: The Photo Strip (Maintains exact width/styles) */}
+        <div className="w-full max-w-xs flex-shrink-0 bg-white p-4 shadow-2xl flex flex-col items-center gap-3">
+          {frames.length === 3
+            ? frames.map((src, i) => (
+                <div
+                  key={i}
+                  style={frameRatio ? { aspectRatio: frameRatio } : undefined}
+                  className="w-full overflow-hidden bg-gray-200"
+                >
+                  <img
+                    src={src}
+                    alt={`Photo strip frame ${i + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ))
+            : [1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  style={
+                    frameRatio ? { aspectRatio: frameRatio } : { height: 112 }
+                  }
+                  className="w-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm"
+                >
+                  Photo {i}
+                </div>
+              ))}
 
-          <h2 className="text-[var(--app-text)] mb-6">Your Photo Strip</h2>
-
-          <div className="bg-white p-4 mb-4 flex flex-col items-center gap-3 shadow-2xl">
-            {frames.length === 3
-              ? frames.map((src, i) => (
-                  <div
-                    key={i}
-                    style={frameRatio ? { aspectRatio: frameRatio } : undefined}
-                    className="w-full overflow-hidden bg-gray-200"
-                  >
-                    <img
-                      src={src}
-                      alt={`Photo strip frame ${i + 1}`}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                ))
-              : [1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    style={
-                      frameRatio ? { aspectRatio: frameRatio } : { height: 112 }
-                    }
-                    className="w-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm"
-                  >
-                    Photo {i}
-                  </div>
-                ))}
-
-            <div className="mt-2 text-center">
-              <p className="text-xs text-gray-400">Portal Connect</p>
-              <p className="text-xs text-gray-300">Heraklion, Crete</p>
-            </div>
-
-            {videoUrl && frames.length === 0 && !frameError && (
-              <p className="text-[var(--app-text-60)] text-xs">
-                Generating your photo strip...
-              </p>
-            )}
-
-            {frameError && (
-              <p className="text-red-600 text-xs">
-                Unable to generate photo strip from the recording.
-              </p>
-            )}
+          <div className="mt-2 text-center">
+            <p className="text-xs text-gray-400">Portal Connect</p>
+            <p className="text-xs text-gray-300">Heraklion, Crete</p>
           </div>
 
+          {videoUrl && frames.length === 0 && !frameError && (
+            <p className="text-[var(--app-text-60)] text-xs text-center">
+              Generating your photo strip...
+            </p>
+          )}
+
+          {frameError && (
+            <p className="text-red-600 text-xs text-center">
+              Unable to generate photo strip from the recording.
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT COLUMN: QR Code & Call to Action Buttons */}
+        <div className="w-full max-w-sm flex flex-col gap-4 self-center md:self-stretch justify-center">
+                <div className="w-full max-w-4xl mb-6">
+        <p className="text-[var(--app-text-60)] text-xs uppercase tracking-widest mb-2">
+          Portal Connect
+        </p>
+        <h2 className="text-[var(--app-text)]">Your Photo Strip</h2>
+      </div>
           {frames.length === 3 && (
-            <div className="bg-white p-4 mb-4 flex flex-col items-center gap-3 shadow-md">
+            <div className="bg-white p-6 flex flex-col items-center gap-4 shadow-md w-full">
               {qrLoading && (
                 <p className="text-xs text-gray-400">Generating QR code...</p>
               )}
               {!qrLoading && qrDataUrl && stripUrl && (
-                <div className="flex flex-col items-center gap-2 w-full">
-                  <p className="text-xs text-gray-500 font-medium">
-                    Scan to download your strip
+                <div className="flex flex-col items-center gap-4 w-full">
+                  <p className="text-xs text-gray-500 font-medium text-center">
+                    {qrError ? "Scan this code to open the page on your phone" : "Scan to download your strip"}
                   </p>
                   <img
                     src={qrDataUrl}
                     alt="QR code to download photo strip"
-                    className="w-32 h-32"
+                    className="w-36 h-36"
                   />
-                  <p className="text-xs text-gray-400 leading-tight text-center">
-                    Point your phone camera at the QR code, or tap the button below
-                  </p>
-                  <a
-                    href={stripUrl}
-                    download="portal-connect-strip.jpg"
-                    className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-3 text-sm font-medium text-center transition-colors block"
-                  >
-                    Download Photo Strip
-                  </a>
+                  {qrError && (
+                    <p className="text-xs text-gray-400 leading-tight text-center">
+                      {qrError}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           )}
 
-          <button
-            onClick={onRestart}
-            className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 font-medium transition-colors"
-          >
-            Exit back to wait screen
-          </button>
-
+          {/* Action Buttons arranged cleanly beneath the QR status wrapper */}
+          <div className="flex flex-col gap-3 w-full">
+            {stripUrl && (
+              <a
+                href={stripUrl}
+                download="portal-connect-strip.jpg"
+                className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 text-sm font-medium text-center transition-colors block shadow-sm"
+              >
+                Download Photo Strip
+              </a>
+            )}
+            <button
+              onClick={onRestart}
+              className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 font-medium transition-colors shadow-sm"
+            >
+              Exit to Home
+            </button>
+          </div>
         </div>
+
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col items-center justify-center px-8 text-center">

@@ -292,15 +292,7 @@ function Step3Preview() {
               {email && <span className="animate-pulse text-[#e07b00]">|</span>}
             </span>
           </div>
-          <div className="flex items-center gap-2 border border-[var(--app-border)] rounded-lg px-3 py-2.5 mb-3">
-            <span className="text-xs text-[var(--app-text-30)] flex-shrink-0">📸</span>
-            <span className="text-xs text-[var(--app-text-30)]">Instagram (optional)</span>
-          </div>
-          <div className="flex items-center gap-2 border border-[var(--app-border)] rounded-lg px-3 py-2.5 mb-4">
-            <span className="text-xs text-[var(--app-text-30)] flex-shrink-0">🐦</span>
-            <span className="text-xs text-[var(--app-text-30)]">X / Twitter (optional)</span>
-          </div>
-          <div className={`w-full py-2.5 rounded-lg text-xs text-center font-medium transition-all duration-200 ${email ? "bg-[#e07b00] text-white" : "bg-[var(--app-elevated)] text-[var(--app-text-30)]"}`}>
+          <div className={`w-full mt-[90px] py-2.5 rounded-lg text-xs text-center font-medium transition-all duration-200 ${email ? "bg-[#e07b00] text-white" : "bg-[var(--app-elevated)] text-[var(--app-text-30)]"}`}>
             Publish Invitation
           </div>
         </>
@@ -405,7 +397,7 @@ const STEPS = [
     bg: "bg-[var(--app-surface-alt)]",
     border: "border-[var(--app-border)]",
     Preview: Step2Preview,
-    description: "Record a video invitation up to 3 minutes long, sharing what you'd like to do and who you're looking for.",
+    description: "Record a video invitation up to 1 minute long, sharing what you'd like to do and who you're looking for.",
   },
   {
     number: 3,
@@ -419,7 +411,7 @@ const STEPS = [
   },
   {
     number: 4,
-    title: "Invitation Is Live",
+    title: "Find Your Buddies",
     icon: <Eye className="w-8 h-8 text-[var(--app-text)]" strokeWidth={1.5} />,
     color: "#e07b00",
     bg: "bg-[var(--app-surface-alt)]",

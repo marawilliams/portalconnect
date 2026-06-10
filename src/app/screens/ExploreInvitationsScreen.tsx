@@ -1,6 +1,9 @@
 import { Eye, MessageCircle, MapPin, User, Clock } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 
+const PUBLIC_BASE = import.meta.env.BASE_URL || "/";
+const publicAsset = (asset: string) => `${PUBLIC_BASE}${asset.replace(/^\//, "")}`;
+
 export interface Invitation {
   id: number;
   tag: "Local" | "Tourist";
@@ -16,7 +19,7 @@ export interface Invitation {
   videoDataUrl?: string; // persisted recording as data URL
 }
 
-const DEFAULT_INVITATION_PREVIEW = "/boy1.mp4";
+const DEFAULT_INVITATION_PREVIEW = publicAsset("boy1.mp4");
 
 export const MOCK_INVITATIONS: Invitation[] = [
   {
@@ -30,7 +33,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I know the best local spots tourists never find, want to join me for a proper Cretan dinner tonight?",
     avatarColor: "#c7d2fe",
     timeline: "Today",
-    videoUrl: "/boy1.mp4",
+    videoUrl: publicAsset("boy1.mp4"),
   },
   {
     id: 2,
@@ -43,7 +46,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Looking for someone to explore the street food scene with me today, I heard the market is amazing!",
     avatarColor: "#fed7aa",
     timeline: "Today",
-    videoUrl: "/girl1.mp4",
+    videoUrl: publicAsset("girl1.mp4"),
   },
   {
     id: 3,
@@ -56,7 +59,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Planning to hike Samaria Gorge tomorrow, would love a hiking buddy to share the experience with!",
     avatarColor: "#fde68a",
     timeline: "Tomorrow",
-    videoUrl: "/girl2.mp4",
+    videoUrl: publicAsset("girl2.mp4"),
 
   },
   {
@@ -70,7 +73,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I go trail running every morning near the old city walls, anyone keen to join for a scenic run?",
     avatarColor: "#bbf7d0",
     timeline: "This Week",
-    videoUrl: "/boy2.mp4",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 5,
@@ -83,7 +86,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "My partner and I are on a mission to find the best thrift shops in Heraklion, come with us!",
     avatarColor: "#a7f3d0",
     timeline: "This Week",
-    videoUrl: "/girl3.mp4",
+    videoUrl: publicAsset("girl3.mp4"),
   },
   {
     id: 6,
@@ -96,7 +99,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Happy to show visitors around the Saturday market and help find the best local crafts and produce.",
     avatarColor: "#fbcfe8",
     timeline: "This Week",
-    videoUrl: "/girl4.mp4",
+    videoUrl: publicAsset("girl4.mp4"),
   },
   {
     id: 7,
@@ -109,7 +112,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Trying out the highly recommended Paideia restaurant with friends, anyone is welcome to join us!",
     avatarColor: "#fca5a5",
     timeline: "Next Week",
-    videoUrl: "/girl5.mp4",
+    videoUrl: publicAsset("girl5.mp4"),
   },
   {
     id: 8,
@@ -122,6 +125,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Heading to the Archaeological Museum of Heraklion, would love a culture buddy to explore it with!",
     avatarColor: "#ddd6fe",
     timeline: "Tomorrow",
+    videoUrl: publicAsset("girl1.mp4"),
   },
   {
     id: 9,
@@ -134,6 +138,8 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "There's a great new exhibition opening this weekend, I'd love to show it to someone visiting the city.",
     avatarColor: "#e9d5ff",
     timeline: "This Week",
+    videoUrl: publicAsset("girl2.mp4"),
+
   },
   {
     id: 10,
@@ -146,6 +152,8 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Looking for someone to check out the live music scene in Heraklion tonight, anyone know good spots?",
     avatarColor: "#fef08a",
     timeline: "Today",
+    videoUrl: publicAsset("boy1.mp4"),
+
   },
   {
     id: 11,
@@ -158,6 +166,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "There's a rooftop concert tonight with local Cretan musicians, come enjoy the views and the sounds!",
     avatarColor: "#bfdbfe",
     timeline: "Today",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 12,
@@ -170,6 +179,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Planning a relaxed bar crawl through the old harbour area, looking for fun people to explore with.",
     avatarColor: "#fecdd3",
     timeline: "Tomorrow",
+    videoUrl: publicAsset("girl3.mp4"),
   },
   {
     id: 13,
@@ -182,6 +192,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I visit Knossos often and love sharing the history, happy to give an informal tour to curious visitors.",
     avatarColor: "#d1fae5",
     timeline: "Next Week",
+    videoUrl: publicAsset("girl4.mp4"),
   },
   {
     id: 14,
@@ -194,6 +205,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Want to walk the Venetian walls around the old city, looking for someone interested in the history.",
     avatarColor: "#fde68a",
     timeline: "This Week",
+    videoUrl: publicAsset("girl5.mp4"),
   },
   {
     id: 15,
@@ -206,6 +218,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Planning a golden hour walk through the old harbour to shoot photos, any photographers want to join?",
     avatarColor: "#fee2e2",
     timeline: "Tomorrow",
+    videoUrl: publicAsset("girl1.mp4"),
   },
   {
     id: 16,
@@ -218,6 +231,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I shoot the Koules Fortress at sunrise, it's magical and I'd love to share it with a fellow photographer.",
     avatarColor: "#cffafe",
     timeline: "Tomorrow",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 17,
@@ -230,6 +244,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Looking for a beach volleyball partner for this afternoon, any skill level welcome, just want to play!",
     avatarColor: "#dcfce7",
     timeline: "Today",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 18,
@@ -242,6 +257,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "We play a casual football match most evenings at the local pitch, visitors always welcome to join in!",
     avatarColor: "#e0f2fe",
     timeline: "This Week",
+    videoUrl: publicAsset("boy1.mp4"),
   },
   {
     id: 19,
@@ -254,6 +270,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I'm learning Greek and happy to help with English in return, coffee and conversation, anyone?",
     avatarColor: "#f0fdf4",
     timeline: "This Week",
+    videoUrl: publicAsset("girl2.mp4"),
   },
   {
     id: 20,
@@ -266,6 +283,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I'd love to practice my English with a native speaker while teaching you some everyday Greek phrases.",
     avatarColor: "#eff6ff",
     timeline: "Next Week",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 21,
@@ -278,6 +296,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I've been here a week and found some amazing spots, want to share them with someone just arriving!",
     avatarColor: "#fef9c3",
     timeline: "This Week",
+    videoUrl: publicAsset("girl3.mp4"),
   },
   {
     id: 22,
@@ -290,6 +309,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Born and raised here, I'd love to show you the corners of the city that guidebooks always miss.",
     avatarColor: "#f5f3ff",
     timeline: "Next Week",
+    videoUrl: publicAsset("boy1.mp4"),
   },
   {
     id: 23,
@@ -302,11 +322,12 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Joining a sailing trip tomorrow with a few spots left, anyone want to come along for the day?",
     avatarColor: "#e0f7fa",
     timeline: "Tomorrow",
+    videoUrl: publicAsset("boy2.mp4"),
   },
   {
     id: 24,
     tag: "Local",
-    name: "Dimitris",
+    name: "Lena",
     ageRange: "25–34",
     category: "Custom Category",
     tags: ["Custom Category", "Food & Dining"],
@@ -314,6 +335,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "My family owns an olive grove just outside the city, happy to take interested visitors for a tour.",
     avatarColor: "#f0fff4",
     timeline: "Next Week",
+    videoUrl: publicAsset("girl4.mp4"),
   },
 ];
 

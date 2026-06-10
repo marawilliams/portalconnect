@@ -19,10 +19,24 @@ export function ConfirmConnectScreen({ invitation, language, onLanguageChange, o
 
         {/* Avatar */}
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+          className="w-24 h-24 rounded-full overflow-hidden mb-6 relative"
           style={{ backgroundColor: invitation.avatarColor + "44" }}
         >
-          <User className="w-12 h-12 text-[var(--app-text-50)]" strokeWidth={1.5} />
+          {invitation.videoDataUrl || invitation.videoUrl ? (
+            <video
+              src={invitation.videoDataUrl ?? invitation.videoUrl}
+              muted
+              playsInline
+              loop
+              autoPlay
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <User className="w-12 h-12 text-[var(--app-text-50)]" strokeWidth={1.5} />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/15" />
         </div>
 
         <p className="text-[#e07b00] text-base mb-2 font-medium">{invitation.name || "Anonymous"}</p>

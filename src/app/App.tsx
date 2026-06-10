@@ -242,19 +242,19 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <WelcomeScreen {...lang} onStart={() => go("about")} onExit={exit} />
       )}
       {screen === "about" && (
-        <AboutStoryScreen {...lang} onContinue={() => go("journeyTutorial")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <AboutStoryScreen {...lang} onContinue={() => go("journeyTutorial")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "journeyTutorial" && (
-        <JourneyTutorialScreen {...lang} onContinue={() => go("whatToDo")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <JourneyTutorialScreen {...lang} onContinue={() => go("whatToDo")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "whatToDo" && (
-        <WhatToDoScreen {...lang} onCreateInvite={() => go("selectInterests")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <WhatToDoScreen {...lang} onCreateInvite={() => go("selectInterests")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "selectInterests" && (
-        <SelectInterestsScreen {...lang} selected={categories} onChange={setCategories} onContinue={() => go("whoAreYou")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <SelectInterestsScreen {...lang} selected={categories} onChange={setCategories} onContinue={() => go("whoAreYou")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "whoAreYou" && (
-        <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("recordInvitation")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("recordInvitation")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "recordInvitation" && (
         <RecordInvitationScreen
@@ -315,13 +315,13 @@ function AppContent({ isDark }: { isDark: boolean }) {
 
             go("stayConnected");
           }}
-          onBack={hasBack ? goBack : undefined}
+          onBack={hasBack ? goBack : () => {}}
           onExit={exit}
           onBusyChange={setBusy}
         />
       )}
       {screen === "stayConnected" && (
-        <StayConnectedScreen {...lang} email={email} onEmailChange={setEmail} onPublish={() => go("invitationLive")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <StayConnectedScreen {...lang} email={email} onEmailChange={setEmail} onPublish={() => go("invitationLive")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "invitationLive" && (
         <InvitationLiveScreen {...lang} onExplore={() => go("explore")} onFinish={() => go("thankYou")} onExit={exit} />
@@ -329,23 +329,23 @@ function AppContent({ isDark }: { isDark: boolean }) {
       {screen === "explore" && (
         <ExploreInvitationsScreen {...lang} selectedCategories={categories} userAgeRange={profile.ageRange} viewedIds={viewedIds} repliedIds={repliedIds}
           onView={(inv) => { markViewed(inv.id); setCurrentInvitation(inv); go("viewInvitation"); }}
-          onBack={hasBack ? goBack : undefined} onExit={exit} onFinish={() => go("thankYou")}
+          onBack={hasBack ? goBack : () => {}} onExit={exit} onFinish={() => go("thankYou")}
         />
       )}
       {screen === "viewInvitation" && currentInvitation && (
-        <ViewInvitationScreen {...lang} invitation={currentInvitation} onExpressInterest={() => go("confirmConnect")} onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy} replyCount={repliedIds.size} alreadyReplied={repliedIds.has(currentInvitation.id)} />
+        <ViewInvitationScreen {...lang} invitation={currentInvitation} onExpressInterest={() => go("confirmConnect")} onBack={hasBack ? goBack : () => {}} onExit={exit} onBusyChange={setBusy} replyCount={repliedIds.size} alreadyReplied={repliedIds.has(currentInvitation.id)} />
       )}
       {screen === "confirmConnect" && currentInvitation && (
-        <ConfirmConnectScreen {...lang} invitation={currentInvitation} onConfirm={() => go("expressInterest")} onBack={hasBack ? goBack : undefined} onExit={exit} />
+        <ConfirmConnectScreen {...lang} invitation={currentInvitation} onConfirm={() => go("expressInterest")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "expressInterest" && (
         <ExpressInterestScreen {...lang}
           onSend={() => { if (currentInvitation) markReplied(currentInvitation.id); go("interestSent"); }}
-          onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy}
+          onBack={hasBack ? goBack : () => {}} onExit={exit} onBusyChange={setBusy}
         />
       )}
       {screen === "interestSent" && (
-        <InterestSentScreen {...lang} onBrowseMore={() => go("explore")} onExit={() => go("thankYou")} onBack={hasBack ? goBack : undefined} />
+        <InterestSentScreen {...lang} onBrowseMore={() => go("explore")} onExit={() => go("thankYou")} onBack={hasBack ? goBack : () => {}} />
       )}
       {screen === "thankYou" && (
         <ThankYouScreen onRestart={reset} videoUrl={recordingPlaybackUrl} />

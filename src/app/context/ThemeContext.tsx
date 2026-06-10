@@ -20,6 +20,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
+  useEffect(() => {
+    // Apply theme class to document element
+    const htmlElement = document.documentElement;
+    htmlElement.className = theme === "dark" ? "app-dark" : "app-light";
+  }, [theme]);
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark" }}>
       {children}
