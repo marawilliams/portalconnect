@@ -62,7 +62,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
   const [viewedIds, setViewedIds] = useState<Set<number>>(new Set());
   const [repliedIds, setRepliedIds] = useState<Set<number>>(new Set());
 
-  const [attractMode, setAttractMode] = useState(true);
+  const [attractMode, setAttractMode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [timeoutWarning, setTimeoutWarning] = useState(false);
   const [warningSeconds, setWarningSeconds] = useState(10);
