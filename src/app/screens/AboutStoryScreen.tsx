@@ -25,10 +25,10 @@ export function AboutStoryScreen({ language, onLanguageChange, onContinue, onBac
               </div>
               <h3 className="text-[var(--app-text)]">Our Mission</h3>
             </div>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed mb-2">
+            <p className="text-[var(--app-text-55)] text-lg leading-relaxed mb-2">
               Portal Connect helps locals and travelers create meaningful real-world connections through shared experiences, interests, and activities.
             </p>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed">
+            <p className="text-[var(--app-text-55)] text-lg leading-relaxed">
               Rather than endlessly scrolling online, users can discover people currently exploring the same city, share invitations, and create new memories together.
             </p>
           </div>
@@ -40,15 +40,15 @@ export function AboutStoryScreen({ language, onLanguageChange, onContinue, onBac
               </div>
               <h3 className="text-[var(--app-text)]">Privacy &amp; Safety</h3>
             </div>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed mb-2">
+            <p className="text-[var(--app-text-55)] text-lg leading-relaxed mb-2">
               Privacy and user safety are central to Portal Connect. Your email address is never publicly displayed.
             </p>
-            <p className="text-[var(--app-text-55)] text-sm mb-2">You will only receive an email notification if:</p>
-            <ul className="text-[var(--app-text-55)] text-sm space-y-1 mb-2 list-disc list-inside">
+            <p className="text-[var(--app-text-55)] text-lg mb-2">You will only receive an email notification if:</p>
+            <ul className="text-[var(--app-text-55)] text-lg space-y-1 mb-2 list-disc list-inside">
               <li>someone replies to your invitation, or</li>
               <li>a person accepts your response to their invitation.</li>
             </ul>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed">
+            <p className="text-[var(--app-text-55)] text-lg leading-relaxed">
               Contact information is only shared after both participants choose to connect. Portal Connect does not send spam.
             </p>
           </div>
@@ -60,13 +60,14 @@ export function AboutStoryScreen({ language, onLanguageChange, onContinue, onBac
               </div>
               <h3 className="text-[var(--app-text)]">Cultural Context</h3>
             </div>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed mb-2">
+            <p className="text-[var(--app-text-55)] text-lg leading-relaxed mb-2">
               Portal Connect is designed for destinations where people from different cultures, backgrounds, and countries naturally cross paths.
             </p>
-            <p className="text-[var(--app-text-55)] text-sm leading-relaxed">
+            <p className="text-[var(--app-text-55)] text-lg  leading-relaxed">
               By helping locals and visitors connect through common interests, Portal Connect encourages cultural exchange, community engagement, and memorable experiences beyond traditional tourism.
             </p>
           </div>
+        </div>
         </div>
 
         <button

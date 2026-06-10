@@ -45,7 +45,7 @@ export function LiveVideoRecorder({
             {fmt(maxSeconds)}
           </div>
           <div className="absolute top-3 right-3 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#ff4d4f] animate-pulse shadow-[0_0_8px_rgba(255,77,79,0.55)]" />
+            <div className="w-3 h-3 rounded-full bg-[#ff4d4f] shadow-[0_0_8px_rgba(255,77,79,0.55)]" />
             <span className="text-white text-[11px] tracking-[0.08em] uppercase">REC</span>
           </div>
         </>
@@ -61,7 +61,10 @@ export function LiveVideoRecorder({
         <>
           <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-[#e07b00]/20 animate-ping" />
+          </div>
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#ff4d4f] animate-ping shadow-[0_0_8px_rgba(255,77,79,0.55)] [animation-duration:1000ms]" />
+            <span className="text-white text-[11px] tracking-[0.08em] uppercase">REC</span>
           </div>
           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-lg">
             {fmt(elapsed)} / {fmt(maxSeconds)}

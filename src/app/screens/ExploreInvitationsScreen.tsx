@@ -1,4 +1,4 @@
-import { Eye, MessageCircle, MapPin, User, Calendar } from "lucide-react";
+import { Eye, MessageCircle, MapPin, User, Clock } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 
 export interface Invitation {
@@ -15,6 +15,8 @@ export interface Invitation {
   videoUrl?: string;
 }
 
+const DEFAULT_INVITATION_PREVIEW = "/boy1.mp4";
+
 export const MOCK_INVITATIONS: Invitation[] = [
   {
     id: 1,
@@ -27,6 +29,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I know the best local spots tourists never find, want to join me for a proper Cretan dinner tonight?",
     avatarColor: "#c7d2fe",
     timeline: "Today",
+    videoUrl: "/boy1.mp4",
   },
   {
     id: 2,
@@ -39,6 +42,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Looking for someone to explore the street food scene with me today, I heard the market is amazing!",
     avatarColor: "#fed7aa",
     timeline: "Today",
+    videoUrl: "/girl1.mp4",
   },
   {
     id: 3,
@@ -51,6 +55,8 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Planning to hike Samaria Gorge tomorrow, would love a hiking buddy to share the experience with!",
     avatarColor: "#fde68a",
     timeline: "Tomorrow",
+    videoUrl: "/girl2.mp4",
+
   },
   {
     id: 4,
@@ -63,6 +69,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "I go trail running every morning near the old city walls, anyone keen to join for a scenic run?",
     avatarColor: "#bbf7d0",
     timeline: "This Week",
+    videoUrl: "/boy2.mp4",
   },
   {
     id: 5,
@@ -75,6 +82,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "My partner and I are on a mission to find the best thrift shops in Heraklion, come with us!",
     avatarColor: "#a7f3d0",
     timeline: "This Week",
+    videoUrl: "/girl3.mp4",
   },
   {
     id: 6,
@@ -87,6 +95,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Happy to show visitors around the Saturday market and help find the best local crafts and produce.",
     avatarColor: "#fbcfe8",
     timeline: "This Week",
+    videoUrl: "/girl4.mp4",
   },
   {
     id: 7,
@@ -99,6 +108,7 @@ export const MOCK_INVITATIONS: Invitation[] = [
     description: "Trying out the highly recommended Paideia restaurant with friends, anyone is welcome to join us!",
     avatarColor: "#fca5a5",
     timeline: "Next Week",
+    videoUrl: "/girl5.mp4",
   },
   {
     id: 8,
@@ -328,6 +338,21 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
 
   const atLimit = repliedIds.size >= REPLY_LIMIT;
 
+  const formatPostedTime = (timeline: string) => {
+    switch (timeline) {
+      case "Today":
+        return "Posted 9 min ago";
+      case "Tomorrow":
+        return "Posted 1 hr ago";
+      case "This Week":
+        return "Posted 2 days ago";
+      case "Next Week":
+        return "Posted 5 days ago";
+      default:
+        return timeline;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col">
       <TopBar onBack={onBack} onExit={onExit} language={language} onLanguageChange={onLanguageChange} />
@@ -395,19 +420,28 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
                   )}
 
                   <div
-                    className="h-24 flex items-center justify-center relative"
+                    className="w-full aspect-video relative overflow-hidden rounded-t-2xl"
                     style={{ backgroundColor: inv.avatarColor + "33" }}
                   >
-                    <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center shadow-sm">
-                      <User className="w-7 h-7 text-[var(--app-text-60)]" strokeWidth={1.5} />
-                    </div>
-                    <div className={`absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <video
+                      src={inv.videoUrl ?? DEFAULT_INVITATION_PREVIEW}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      muted
+                      playsInline
+                      preload="metadata"
+                      onLoadedMetadata={(e) => {
+                        e.currentTarget.pause();
+                        e.currentTarget.currentTime = 0;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/20" />
+                    <div className={`absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                       inv.tag === "Local" ? "bg-[#e07b00] text-white" : "bg-[var(--app-elevated)] text-[var(--app-text-70)]"
                     }`}>
                       {inv.tag === "Local" ? <MapPin className="w-3 h-3" /> : <User className="w-3 h-3" />}
                       {inv.tag}
                     </div>
-                    <div className="absolute top-2 right-2 bg-black/50 text-[var(--app-text-70)] text-xs px-2 py-0.5 rounded-full">
+                    <div className="absolute top-2 right-2 z-10 bg-black/50 text-[var(--app-text-70)] text-xs px-2 py-0.5 rounded-full">
                       {inv.ageRange}
                     </div>
                   </div>
@@ -419,8 +453,8 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
                     <p className="text-sm text-[var(--app-text)] mb-2 leading-snug">{inv.invitationTitle}</p>
                     <p className="text-xs text-[var(--app-text-40)] mb-3 leading-relaxed line-clamp-2">"{inv.description}"</p>
                     <div className="flex items-center gap-1 mb-3 text-xs text-[var(--app-text-60)]">
-                      <Calendar className="w-3 h-3" />
-                      <span>{inv.timeline}</span>
+                      <Clock className="w-3 h-3" />
+                      <span>{formatPostedTime(inv.timeline)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mb-3">
                       {inv.tags.map(t => (

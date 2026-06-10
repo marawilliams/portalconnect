@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { MapPin, User, Calendar, AlertTriangle, PlayCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MapPin, User, Clock, AlertTriangle, PlayCircle } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import type { Invitation } from "./ExploreInvitationsScreen";
 
@@ -21,7 +21,34 @@ interface Props {
 export function ViewInvitationScreen({ invitation, language, onLanguageChange, onExpressInterest, onBack, onExit, onBusyChange, replyCount, alreadyReplied }: Props) {
   const [videoWatched, setVideoWatched] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [previewComplete, setPreviewComplete] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const atLimit = replyCount >= REPLY_LIMIT;
+
+  const formatPostedTime = (timeline: string) => {
+    switch (timeline) {
+      case "Today":
+        return "Posted 9 min ago";
+      case "Tomorrow":
+        return "Posted 1 hr ago";
+      case "This Week":
+        return "Posted 2 days ago";
+      case "Next Week":
+        return "Posted 5 days ago";
+      default:
+        return timeline;
+    }
+  };
+
+  useEffect(() => {
+    setVideoWatched(false);
+    setVideoPlaying(false);
+    setPreviewComplete(false);
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+    }
+  }, [invitation]);
 
   useEffect(() => {
     onBusyChange?.(videoPlaying);
@@ -38,7 +65,7 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
           <div>
             <p className="text-[#e07b00] font-semibold text-sm">Reply limit: {replyCount}/{REPLY_LIMIT} used</p>
             <p className="text-[var(--app-text-60)] text-xs mt-0.5 leading-relaxed">
-              You may respond to a maximum of {REPLY_LIMIT} invitations per session. Watch the full video before responding.
+              You may respond to a maximum of {REPLY_LIMIT} invitations per session. Watch the first 10 seconds before responding.
             </p>
           </div>
         </div>
@@ -68,8 +95,8 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
 
         {invitation.timeline && (
           <div className="flex items-center gap-1.5 mb-4 text-sm bg-[var(--app-surface-alt)] border border-[var(--app-border)] rounded-lg px-3 py-2">
-            <Calendar className="w-4 h-4 text-[#e07b00]" />
-            <span className="text-[var(--app-text-80)]">{invitation.timeline}</span>
+            <Clock className="w-4 h-4 text-[#e07b00]" />
+            <span className="text-[var(--app-text-80)]">{formatPostedTime(invitation.timeline)}</span>
           </div>
         )}
 
@@ -77,16 +104,35 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
         <div className="mb-2">
           <div className="relative rounded-xl overflow-hidden bg-[var(--app-surface)] border border-[var(--app-border)]" style={{ aspectRatio: "16/9" }}>
             <video
+              ref={videoRef}
               src={invitation.videoUrl ?? DEFAULT_INVITATION_VIDEO}
               controls
+              autoPlay
+              muted
+              playsInline
               className="w-full h-full object-cover"
               onPlay={() => setVideoPlaying(true)}
               onPause={() => setVideoPlaying(false)}
               onEnded={() => {
                 setVideoPlaying(false);
                 setVideoWatched(true);
+                setPreviewComplete(true);
+              }}
+              onTimeUpdate={(e) => {
+                const current = e.currentTarget.currentTime;
+                if (!previewComplete && current >= 10) {
+                  e.currentTarget.pause();
+                  setPreviewComplete(true);
+                  setVideoWatched(true);
+                  setVideoPlaying(false);
+                }
               }}
             />
+            {previewComplete && (
+              <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-xs text-center py-2">
+                Video preview ended at 10 seconds.
+              </div>
+            )}
           </div>
         </div>
 
@@ -94,7 +140,7 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
         {!videoWatched && (
           <div className="flex items-center gap-2 mb-4 bg-[var(--app-surface-alt)] border border-[var(--app-border)] rounded-xl px-4 py-2.5">
             <PlayCircle className="w-4 h-4 text-[#e07b00] flex-shrink-0" />
-            <p className="text-xs text-[var(--app-text-50)]">Watch the full video to unlock the respond button.</p>
+            <p className="text-xs text-[var(--app-text-50)]">Watch the first 10 seconds to unlock the respond button.</p>
           </div>
         )}
 

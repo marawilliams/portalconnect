@@ -166,11 +166,6 @@ function AppContent({ isDark }: { isDark: boolean }) {
     setHistory((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
 
-  const exit = useCallback(() => {
-    setHistory(["language"]);
-    setAttractMode(true);
-  }, []);
-
   const markViewed = (id: number) => setViewedIds((prev) => new Set(prev).add(id));
   const markReplied = (id: number) => setRepliedIds((prev) => new Set(prev).add(id));
 
