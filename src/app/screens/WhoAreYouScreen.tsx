@@ -31,6 +31,11 @@ const GENDERS = ["Male", "Female", "Nonbinary", "Prefer not to say"];
 export function WhoAreYouScreen({ data, onChange, onContinue, onBack, onExit, language, onLanguageChange }: Props) {
   const set = (k: keyof ProfileData, v: string) => onChange({ ...data, [k]: v });
   const today = new Date().toISOString().split("T")[0];
+  const maxDate = (() => {
+    const later = new Date();
+    later.setDate(later.getDate() + 14);
+    return later.toISOString().split("T")[0];
+  })();
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const canContinue =
@@ -142,69 +147,71 @@ export function WhoAreYouScreen({ data, onChange, onContinue, onBack, onExit, la
               </div>
             </div>
 
-            {/* Departure date — Tourist only, icon button + popover calendar */}
-            {data.role === "Tourist" && (
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-[var(--app-text-60)]">
-                  When are you leaving?{" "}
-                  <span className="text-[var(--app-text-30)] text-xs">Your invitation will be be deleted on this date</span>
-                </label>
-                <div className="relative">
-                  <button
-                    onClick={() => setCalendarOpen((o) => !o)}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border-2 text-sm font-medium transition-colors w-full ${
-                      data.departureDate
-                        ? "border-[#e07b00] text-[var(--app-text)]"
-                        : "border-[var(--app-border)] text-[var(--app-text-50)]"
-                    } bg-[var(--app-surface-alt)] hover:border-[#e07b00]/60 hover:text-[var(--app-text)]`}
-                  >
-                    <CalendarX2 className="w-4 h-4 text-[#e07b00] flex-shrink-0" />
-                    {data.departureDate ? data.departureDate : "Pick a departure date"}
-                    {data.departureDate && (
-                      <span
-                        onClick={(e) => { e.stopPropagation(); set("departureDate", ""); }}
-                        className="ml-auto text-[var(--app-text-30)] hover:text-[var(--app-text)] cursor-pointer"
-                      >
-                        ✕
-                      </span>
-                    )}
-                  </button>
-
-                  {calendarOpen && (
-                    <>
-                      {/* Backdrop */}
-                      <div
-                        className="fixed inset-0 z-40 bg-black/50"
-                        onClick={() => setCalendarOpen(false)}
-                      />
-                      {/* Centered modal */}
-                      <div className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--app-surface)] border-2 border-[var(--app-border)] rounded-2xl shadow-2xl p-4 w-[min(360px,90vw)]">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-[var(--app-text-60)] flex items-center gap-2">
-                            <CalendarX2 className="w-4 h-4 text-[#e07b00]" />
-                            When are you leaving?
-                          </span>
-                          <button
-                            onClick={() => setCalendarOpen(false)}
-                            className="text-[var(--app-text-30)] hover:text-[var(--app-text)] text-lg leading-none"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <InlineCalendar
-                          value={data.departureDate}
-                          onChange={(d) => { set("departureDate", d); setCalendarOpen(false); }}
-                          minDate={today}
-                        />
-                        <p className="text-xs text-[var(--app-text-30)] mt-3">
-                          Your invitation will be automatically removed on this date.
-                        </p>
-                      </div>
-                    </>
+            {/* Departure date — everyone can set it */}
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-[var(--app-text-60)]">
+                Keep my invitation available until...{" "}
+                <span className="text-[var(--app-text-30)] text-xs">Pick a date up to two weeks from today</span>
+              </label>
+              <div className="relative">
+                <button
+                  onClick={() => setCalendarOpen((o) => !o)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border-2 text-sm font-medium transition-colors w-full ${
+                    data.departureDate
+                      ? "border-[#e07b00] text-[var(--app-text)]"
+                      : "border-[var(--app-border)] text-[var(--app-text-50)]"
+                  } bg-[var(--app-surface-alt)] hover:border-[#e07b00]/60 hover:text-[var(--app-text)]`}
+                >
+                  <CalendarX2 className="w-4 h-4 text-[#e07b00] flex-shrink-0" />
+                  {data.departureDate ? data.departureDate : "Pick an end date"}
+                  {data.departureDate && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); set("departureDate", ""); }}
+                      className="ml-auto text-[var(--app-text-30)] hover:text-[var(--app-text)] cursor-pointer"
+                    >
+                      ✕
+                    </span>
                   )}
-                </div>
+                </button>
+                <p className="text-xs text-[var(--app-text-30)] mt-2">
+                  Invitations are automatically deleted after two weeks.
+                </p>
+
+                {calendarOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40 bg-black/50"
+                      onClick={() => setCalendarOpen(false)}
+                    />
+                    {/* Centered modal */}
+                    <div className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--app-surface)] border-2 border-[var(--app-border)] rounded-2xl shadow-2xl p-4 w-[min(360px,90vw)]">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-[var(--app-text-60)] flex items-center gap-2">
+                          <CalendarX2 className="w-4 h-4 text-[#e07b00]" />
+                          When are you leaving?
+                        </span>
+                        <button
+                          onClick={() => setCalendarOpen(false)}
+                          className="text-[var(--app-text-30)] hover:text-[var(--app-text)] text-lg leading-none"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <InlineCalendar
+                        value={data.departureDate}
+                        onChange={(d) => { set("departureDate", d); setCalendarOpen(false); }}
+                        minDate={today}
+                        maxDate={maxDate}
+                      />
+                      <p className="text-xs text-[var(--app-text-30)] mt-3">
+                        Invitations are automatically deleted after two weeks.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* ── RIGHT COLUMN ── */}

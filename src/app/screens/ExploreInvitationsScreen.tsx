@@ -13,6 +13,7 @@ export interface Invitation {
   avatarColor: string;
   timeline: string;
   videoUrl?: string;
+  videoDataUrl?: string; // persisted recording as data URL
 }
 
 const DEFAULT_INVITATION_PREVIEW = "/boy1.mp4";
@@ -332,10 +333,22 @@ interface Props {
 }
 
 export function ExploreInvitationsScreen({ language, onLanguageChange, selectedCategories, viewedIds, repliedIds, onView, onBack, onExit, onFinish }: Props) {
-  const filtered = MOCK_INVITATIONS.filter((inv) => {
+  // load persisted invitations from localStorage
+  let persisted: Invitation[] = [];
+  try {
+    const raw = localStorage.getItem("portal_invitations");
+    if (raw) persisted = JSON.parse(raw);
+  } catch (err) {
+    console.warn("Failed to load persisted invitations", err);
+
+  }
+
+  const allInvitations = [...(persisted || []), ...MOCK_INVITATIONS];
+
+  const filtered = allInvitations.filter((inv) => {
+    if (!inv.tags || inv.tags.length === 0) return true;
     return inv.tags.some((t) => selectedCategories.includes(t));
   }).slice(0, 6);
-
   const atLimit = repliedIds.size >= REPLY_LIMIT;
 
   const formatPostedTime = (timeline: string) => {
@@ -424,7 +437,7 @@ export function ExploreInvitationsScreen({ language, onLanguageChange, selectedC
                     style={{ backgroundColor: inv.avatarColor + "33" }}
                   >
                     <video
-                      src={inv.videoUrl ?? DEFAULT_INVITATION_PREVIEW}
+                      src={inv.videoDataUrl ?? inv.videoUrl ?? DEFAULT_INVITATION_PREVIEW}
                       className="absolute inset-0 h-full w-full object-cover"
                       muted
                       playsInline

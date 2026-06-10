@@ -5,6 +5,7 @@ interface Props {
   value: string; // YYYY-MM-DD
   onChange: (date: string) => void;
   minDate?: string; // YYYY-MM-DD
+  maxDate?: string; // YYYY-MM-DD
 }
 
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -17,23 +18,42 @@ function toYMD(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
-export function InlineCalendar({ value, onChange, minDate }: Props) {
+function parseYMD(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return { year, month: month - 1, day };
+}
+
+function addDays(value: string, days: number) {
+  const date = new Date(value + "T00:00:00");
+  date.setDate(date.getDate() + days);
+  return toYMD(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function InlineCalendar({ value, onChange, minDate, maxDate }: Props) {
   const today = new Date();
   const todayStr = toYMD(today.getFullYear(), today.getMonth(), today.getDate());
   const min = minDate ?? todayStr;
+  const max = maxDate ?? addDays(todayStr, 14);
 
   const initDate = value ? new Date(value + "T00:00:00") : today;
   const [viewYear, setViewYear] = useState(initDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initDate.getMonth());
 
+  const { year: minYear, month: minMonth } = parseYMD(min);
+  const { year: maxYear, month: maxMonth } = parseYMD(max);
+  const canPrev = viewYear > minYear || (viewYear === minYear && viewMonth > minMonth);
+  const canNext = viewYear < maxYear || (viewYear === maxYear && viewMonth < maxMonth);
+
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const prevMonth = () => {
+    if (!canPrev) return;
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
     else setViewMonth(m => m - 1);
   };
   const nextMonth = () => {
+    if (!canNext) return;
     if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
     else setViewMonth(m => m + 1);
   };
@@ -81,17 +101,17 @@ export function InlineCalendar({ value, onChange, minDate }: Props) {
           const dateStr = toYMD(viewYear, viewMonth, day);
           const isSelected = dateStr === value;
           const isToday = dateStr === todayStr;
-          const isPast = dateStr < min;
+          const isOutOfRange = dateStr < min || dateStr > max;
 
           return (
             <button
               key={i}
-              disabled={isPast}
-              onClick={() => !isPast && onChange(dateStr)}
+              disabled={isOutOfRange}
+              onClick={() => !isOutOfRange && onChange(dateStr)}
               className={`mx-auto w-10 h-10 flex items-center justify-center rounded-xl text-base transition-colors ${
                 isSelected
                   ? "bg-[#e07b00] text-white font-semibold"
-                  : isPast
+                  : isOutOfRange
                   ? "text-[var(--app-text-20)] cursor-not-allowed"
                   : isToday
                   ? "border-2 border-[#e07b00] text-[#e07b00] font-semibold hover:bg-[#e07b00]/10"

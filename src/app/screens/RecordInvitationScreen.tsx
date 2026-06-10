@@ -8,7 +8,7 @@ interface Props {
   categories: string[];
   invitationText: string;
   onTextChange: (t: string) => void;
-  onSave: (duration: number) => void;
+  onSave: (duration: number, playbackUrl?: string, recordedBlob?: Blob | null) => void;
   onBack: () => void;
   onExit: () => void;
   onLanguageChange?: (lang: string) => void;
@@ -16,6 +16,7 @@ interface Props {
   language: string;
   initialDone?: boolean;
   initialDuration?: number;
+  initialPlaybackUrl?: string;
 }
 
 const CATEGORY_SUGGESTIONS: Record<string, string[]> = {
@@ -98,10 +99,10 @@ function getSuggestions(categories: string[]): string[] {
 
 export function RecordInvitationScreen({
   categories, invitationText, onTextChange, onSave, onBack, onExit, language, onLanguageChange,
-  onBusyChange, initialDone = false, initialDuration = 0,
+  onBusyChange, initialDone = false, initialDuration = 0, initialPlaybackUrl,
 }: Props) {
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const { videoRef, playbackUrl, error, recordState, elapsed, startRecording, stopRecording, retake, fmt } = useVideoRecorder({ maxSeconds: 60, initialDone, initialDuration });
+  const { videoRef, playbackUrl, recordedBlob, error, recordState, elapsed, startRecording, stopRecording, retake, fmt } = useVideoRecorder({ maxSeconds: 60, initialDone, initialDuration, initialPlaybackUrl });
 
   useEffect(() => {
     onBusyChange?.(recordState === "recording" || videoPlaying);
@@ -149,19 +150,25 @@ export function RecordInvitationScreen({
               </button>
             )}
             {recordState === "done" && (
-              <div className="flex gap-2">
-                <button
-                  onClick={retake}
-                  className="flex-1 border border-[var(--app-border)] text-[var(--app-text-60)] py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--app-surface-alt)] transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4" /> Retake
-                </button>
-                <button
-                  onClick={() => onSave(elapsed)}
-                  className="flex-1 bg-[#e07b00] hover:bg-[#c96e00] text-white py-3 rounded-xl transition-colors"
-                >
-                  Save &amp; Continue
-                </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={retake}
+                    className="flex-1 border border-[var(--app-border)] text-[var(--app-text-60)] py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-[var(--app-surface-alt)] transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Retake
+                  </button>
+                  <button
+                    onClick={() => onSave(elapsed, playbackUrl, recordedBlob)}
+                    disabled={!playbackUrl}
+                    className={`flex-1 py-3 rounded-xl transition-colors ${playbackUrl ? "bg-[#e07b00] hover:bg-[#c96e00] text-white" : "bg-[var(--app-surface-alt)] text-[var(--app-text-40)] cursor-not-allowed"}`}
+                  >
+                    {playbackUrl ? "Save & Continue" : "Preparing video…"}
+                  </button>
+                </div>
+                {!playbackUrl && (
+                  <p className="text-xs text-[var(--app-text-30)]">Please wait while your recording is processed before continuing.</p>
+                )}
               </div>
             )}
           </div>

@@ -105,7 +105,7 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
           <div className="relative rounded-xl overflow-hidden bg-[var(--app-surface)] border border-[var(--app-border)]" style={{ aspectRatio: "16/9" }}>
             <video
               ref={videoRef}
-              src={invitation.videoUrl ?? DEFAULT_INVITATION_VIDEO}
+              src={invitation.videoDataUrl ?? invitation.videoUrl ?? DEFAULT_INVITATION_VIDEO}
               controls
               autoPlay
               muted

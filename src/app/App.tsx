@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LanguageSelectScreen } from "./screens/LanguageSelectScreen";
 import { WelcomeScreen } from "./screens/WelcomeScreen";
 import { AboutStoryScreen } from "./screens/AboutStoryScreen";
@@ -40,7 +41,9 @@ function AppInner() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppInner />
+      <ErrorBoundary>
+        <AppInner />
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }
@@ -55,6 +58,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
   const [currentInvitation, setCurrentInvitation] = useState<Invitation | null>(null);
   const [recordingDone, setRecordingDone] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordingPlaybackUrl, setRecordingPlaybackUrl] = useState<string | undefined>(undefined);
   const [viewedIds, setViewedIds] = useState<Set<number>>(new Set());
   const [repliedIds, setRepliedIds] = useState<Set<number>>(new Set());
 
@@ -87,6 +91,17 @@ function AppContent({ isDark }: { isDark: boolean }) {
   }, []);
 
   const exit = useCallback(() => {
+    try {
+      const lastPreview = localStorage.getItem("portal_last_preview");
+      // If there's a preview or a recently recorded playback URL, show the thank-you/photo-strip screen
+      if (recordingPlaybackUrl || lastPreview) {
+        setHistory(["thankYou"]);
+        setAttractMode(false);
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
     setHistory(["language"]);
     setAttractMode(true);
   }, []);
@@ -111,6 +126,21 @@ function AppContent({ isDark }: { isDark: boolean }) {
       }, 1000);
     }, IDLE_MS);
   }, [attractMode, busy, clearTimers, exit]);
+
+  // On startup, remove any mistakenly-published invitations that include video data URLs
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("portal_invitations");
+      if (!raw) return;
+      const list = JSON.parse(raw) as any[];
+      const filtered = list.filter((i) => !i.videoDataUrl);
+      if (filtered.length !== list.length) {
+        localStorage.setItem("portal_invitations", JSON.stringify(filtered));
+      }
+    } catch (err) {
+      // ignore
+    }
+  }, []);
 
   const resetIdle = useCallback(() => {
     if (busy || attractMode) return;
@@ -174,7 +204,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
   const reset = () => {
     setProfile(EMPTY_PROFILE);
     setEmail("");
-    setCategories([]); setInvitationText(""); setRecordingDone(false); setRecordingDuration(0);
+    setCategories([]); setInvitationText(""); setRecordingDone(false); setRecordingDuration(0); setRecordingPlaybackUrl(undefined);
     setViewedIds(new Set()); setRepliedIds(new Set());
     setCurrentInvitation(null);
     setHistory(["language"]);
@@ -227,7 +257,68 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("recordInvitation")} onBack={hasBack ? goBack : undefined} onExit={exit} />
       )}
       {screen === "recordInvitation" && (
-        <RecordInvitationScreen {...lang} categories={categories} invitationText={invitationText} onTextChange={setInvitationText} initialDone={recordingDone} initialDuration={recordingDuration} onSave={(dur) => { setRecordingDone(true); setRecordingDuration(dur); go("stayConnected"); }} onBack={hasBack ? goBack : undefined} onExit={exit} onBusyChange={setBusy} />
+        <RecordInvitationScreen
+          {...lang}
+          categories={categories}
+          invitationText={invitationText}
+          onTextChange={setInvitationText}
+          initialDone={recordingDone}
+          initialDuration={recordingDuration}
+          initialPlaybackUrl={recordingPlaybackUrl}
+          onSave={async (dur, url, blob) => {
+            setRecordingDone(true);
+            setRecordingDuration(dur);
+
+            // persist invitation with video data in localStorage
+            let videoDataUrl: string | undefined = undefined;
+            try {
+              if (blob) {
+                videoDataUrl = await new Promise<string>((resolve, reject) => {
+                  const fr = new FileReader();
+                  fr.onerror = () => reject(new Error("Failed to read blob"));
+                  fr.onload = () => resolve(String(fr.result));
+                  fr.readAsDataURL(blob);
+                });
+              }
+
+              // Save as a private draft/preview so it doesn't appear in public browse
+              const id = Date.now();
+              const inv = {
+                id,
+                tag: profile.role || "Tourist",
+                name: profile.name || undefined,
+                ageRange: profile.ageRange || "",
+                category: categories[0] || "Custom",
+                tags: categories,
+                invitationTitle: profile.invitationTitle || invitationText || "",
+                description: profile.shortDescription || invitationText || "",
+                avatarColor: "#c7d2fe",
+                timeline: "Today",
+                videoDataUrl,
+              };
+
+              // Persist as the 'last preview' so it's available when navigating back
+              try {
+                localStorage.setItem("portal_last_preview", JSON.stringify(inv));
+              } catch (e) {
+                console.warn("Failed to persist preview", e);
+              }
+
+              // make it the current invitation for immediate preview/navigation
+              setCurrentInvitation(inv as any);
+            } catch (err) {
+              console.warn("Failed to persist invitation", err);
+            }
+
+            // prefer the persisted data URL if available so it's stable across pages
+            setRecordingPlaybackUrl(videoDataUrl ?? url);
+
+            go("stayConnected");
+          }}
+          onBack={hasBack ? goBack : undefined}
+          onExit={exit}
+          onBusyChange={setBusy}
+        />
       )}
       {screen === "stayConnected" && (
         <StayConnectedScreen {...lang} email={email} onEmailChange={setEmail} onPublish={() => go("invitationLive")} onBack={hasBack ? goBack : undefined} onExit={exit} />
@@ -257,7 +348,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <InterestSentScreen {...lang} onBrowseMore={() => go("explore")} onExit={() => go("thankYou")} onBack={hasBack ? goBack : undefined} />
       )}
       {screen === "thankYou" && (
-        <ThankYouScreen onRestart={reset} />
+        <ThankYouScreen onRestart={reset} videoUrl={recordingPlaybackUrl} />
       )}
     </div>
   );
