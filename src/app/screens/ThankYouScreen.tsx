@@ -290,19 +290,21 @@ if (showStrip) {
   return (
     <div className="min-h-screen bg-[var(--app-bg)] flex flex-col items-center justify-center px-8 text-center">
       <div className="max-w-sm w-full">
+      <h1 className="text-[#e07b00] mb-3 leading-snug">
+                THANK YOU!
+              </h1>
 
         <div className="w-20 h-20 bg-[#e07b00]/20 border border-[#e07b00]/30 flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">🎉</span>
+          <span className="text-5xl text-white animate-bounce">✉︎</span>
         </div>
+        <h2 className="text-[var(--app-text)] mb-6 leading-snug">
+  Check your <span className="font-bold text-[#e07b00]">EMAIL</span> for next steps!
+</h2>
 
-        <h2 className="text-[var(--app-text)] mb-3 leading-snug">
-          Thank You for Using Portal Connect
-        </h2>
+       
 
-        <p className="text-[var(--app-text-40)] text-sm mb-6 leading-relaxed">
-          We will send an email with:
-        </p>
-
+      
+    {/*
         <div className="bg-[var(--app-surface-alt)] border border-[var(--app-border)] p-4 mb-8 text-left space-y-2">
           {[
             "Next steps and important information",
@@ -315,7 +317,8 @@ if (showStrip) {
             </div>
           ))}
         </div>
-
+*/}
+        
         <div className="flex flex-col gap-3">
           <button
             onClick={() => setShowStrip(true)}
@@ -326,7 +329,7 @@ if (showStrip) {
           </button>
           <button
             onClick={onRestart}
-            className="w-full bg-[var(--app-surface-alt)] hover:bg-[var(--app-elevated)] border border-[var(--app-border)] text-[var(--app-text-60)] py-4 rounded-xl font-medium transition-colors pb-10"
+            className="w-full bg-[var(--app-surface-alt)] hover:bg-[var(--app-elevated)] border border-[var(--app-border)] text-[var(--app-text-60)] py-4 rounded-xl font-medium transition-colors"
           >
             Exit to Home
           </button>

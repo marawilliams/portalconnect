@@ -30,6 +30,7 @@ export function LiveVideoRecorder({
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ transform: "scaleX(-1)" }}
         autoPlay
         playsInline
         muted={state === "recording"}

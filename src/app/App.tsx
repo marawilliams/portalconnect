@@ -245,16 +245,16 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <AboutStoryScreen {...lang} onContinue={() => go("journeyTutorial")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "journeyTutorial" && (
-        <JourneyTutorialScreen {...lang} onContinue={() => go("whatToDo")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
+        <JourneyTutorialScreen {...lang} onContinue={() => go("selectInterests")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "whatToDo" && (
-        <WhatToDoScreen {...lang} onCreateInvite={() => go("selectInterests")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
+        <WhatToDoScreen {...lang} onCreateInvite={() => go("recordInvitation")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "selectInterests" && (
         <SelectInterestsScreen {...lang} selected={categories} onChange={setCategories} onContinue={() => go("whoAreYou")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "whoAreYou" && (
-        <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("recordInvitation")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
+        <WhoAreYouScreen {...lang} data={profile} onChange={setProfile} onContinue={() => go("whatToDo")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "recordInvitation" && (
         <RecordInvitationScreen
@@ -336,7 +336,7 @@ function AppContent({ isDark }: { isDark: boolean }) {
         <ViewInvitationScreen {...lang} invitation={currentInvitation} onExpressInterest={() => go("confirmConnect")} onBack={hasBack ? goBack : () => {}} onExit={exit} onBusyChange={setBusy} replyCount={repliedIds.size} alreadyReplied={repliedIds.has(currentInvitation.id)} />
       )}
       {screen === "confirmConnect" && currentInvitation && (
-        <ConfirmConnectScreen {...lang} invitation={currentInvitation} onConfirm={() => go("expressInterest")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
+        <ConfirmConnectScreen {...lang} invitation={currentInvitation} onConfirm={() => go("recordInvitation")} onBack={hasBack ? goBack : () => {}} onExit={exit} />
       )}
       {screen === "expressInterest" && (
         <ExpressInterestScreen {...lang}
