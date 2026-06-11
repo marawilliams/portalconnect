@@ -51,6 +51,20 @@ const buildStripDataUrl = async (
   return canvas.toDataURL("image/jpeg", 0.9);
 };
 
+async function uploadStripToCloudinary(dataUrl: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", dataUrl);
+  formData.append("upload_preset", "portalconnect");
+
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dtd5ese9s/image/upload",
+    { method: "POST", body: formData }
+  );
+  const data = await res.json();
+  return data.secure_url;
+}
+
+
 export function ThankYouScreen({ onRestart, videoUrl }: Props) {
   const [showStrip, setShowStrip] = useState(false);
   const [frames, setFrames] = useState<string[]>([]);
@@ -143,29 +157,20 @@ export function ThankYouScreen({ onRestart, videoUrl }: Props) {
     buildStripDataUrl(frames, frameRatio).then(async (dataUrl) => {
       try {
         setStripUrl(dataUrl);
-
-        try {
-          const qr = await QRCode.toDataURL(dataUrl, {
-            width: 160,
-            margin: 1,
-            color: { dark: "#000000", light: "#ffffff" },
-            errorCorrectionLevel: "L",
-            typeNumber: 40,
-          });
-          setQrDataUrl(qr);
-        } catch (innerErr) {
-          console.warn("QR generation from image data failed", innerErr);
-          setQrError("Your strip is too large to embed in a QR code. Scan this page URL instead.");
-          const pageUrl = window.location.href;
-          const qr = await QRCode.toDataURL(pageUrl, {
-            width: 160,
-            margin: 1,
-            color: { dark: "#000000", light: "#ffffff" },
-            errorCorrectionLevel: "L",
-            typeNumber: 40,
-          });
-          setQrDataUrl(qr);
-        }
+try {
+  // Upload to Cloudinary and QR the returned URL
+  const shareUrl = await uploadStripToCloudinary(dataUrl);
+  const qr = await QRCode.toDataURL(shareUrl, {
+    width: 160,
+    margin: 1,
+    color: { dark: "#000000", light: "#ffffff" },
+    errorCorrectionLevel: "L",
+  });
+  setQrDataUrl(qr);
+} catch (innerErr) {
+  console.warn("Upload or QR failed", innerErr);
+  setQrError("Could not generate shareable QR code.");
+}
       } catch (err) {
         console.warn("QR generation failed", err);
         setQrError("QR generation failed. You can still download the strip below.");
@@ -264,7 +269,7 @@ if (showStrip) {
 
           {/* Action Buttons arranged cleanly beneath the QR status wrapper */}
           <div className="flex flex-col gap-3 w-full">
-            {stripUrl && (
+            {/*{stripUrl && (
               <a
                 href={stripUrl}
                 download="portal-connect-strip.jpg"
@@ -273,6 +278,7 @@ if (showStrip) {
                 Download Photo Strip
               </a>
             )}
+              */}
             <button
               onClick={onRestart}
               className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 font-medium transition-colors shadow-sm"
