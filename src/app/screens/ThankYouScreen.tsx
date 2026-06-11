@@ -11,44 +11,102 @@ const buildStripDataUrl = async (
   frames: string[],
   ratio: string | undefined
 ): Promise<string> => {
-  const frameW = 320;
+  const frameW = 300;
   const frameH = ratio
     ? Math.round(
         frameW /
           (parseInt(ratio.split("/")[0]) / parseInt(ratio.split("/")[1]))
       )
     : 180;
-  const padding = 16;
-  const gap = 8;
-  const footerH = 40;
+  const padding = 12;
+  const gap = 6;
+  const headerH = 50;
+  const footerH = 70;
 
   const canvas = document.createElement("canvas");
   canvas.width = frameW + padding * 2;
-  canvas.height = padding + (frameH + gap) * 3 + footerH + padding;
+  canvas.height = headerH + padding + (frameH + gap) * 3 + footerH;
 
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#ffffff";
+
+  // Cream background
+  ctx.fillStyle = "#fdf8f0";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Top border stripe
+  ctx.fillStyle = "#e07b00";
+  ctx.fillRect(0, 0, canvas.width, 6);
+
+  // Header
+  ctx.fillStyle = "#e07b00";
+  ctx.font = "bold 18px serif";
+  ctx.textAlign = "center";
+  ctx.fillText("✦ PORTAL CONNECT ✦", canvas.width / 2, 32);
+
+  ctx.fillStyle = "#999";
+  ctx.font = "10px sans-serif";
+  ctx.fillText("Heraklion, Crete", canvas.width / 2, 48);
+
+  // Film holes on left and right
+  const holeY = [headerH + padding, headerH + padding + frameH + gap, headerH + padding + (frameH + gap) * 2];
+  for (const y of holeY) {
+    // left holes
+    ctx.fillStyle = "#e8ddd0";
+    ctx.beginPath();
+    ctx.roundRect(3, y + frameH / 2 - 8, 7, 16, 3);
+    ctx.fill();
+    // right holes
+    ctx.beginPath();
+    ctx.roundRect(canvas.width - 10, y + frameH / 2 - 8, 7, 16, 3);
+    ctx.fill();
+  }
+
+  // Draw frames with slight shadow
   for (let i = 0; i < frames.length; i++) {
+    const y = headerH + padding + i * (frameH + gap);
+
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.08)";
+    ctx.fillRect(padding + 2, y + 2, frameW, frameH);
+
     const img = await new Promise<HTMLImageElement>((res) => {
       const im = new Image();
       im.onload = () => res(im);
       im.src = frames[i];
     });
-    ctx.drawImage(img, padding, padding + i * (frameH + gap), frameW, frameH);
+    ctx.drawImage(img, padding, y, frameW, frameH);
+
+    // Frame border
+    ctx.strokeStyle = "#ddd";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padding, y, frameW, frameH);
   }
 
-  ctx.fillStyle = "#999999";
-  ctx.font = "12px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText(
-    "Portal Connect - Heraklion, Crete",
-    canvas.width / 2,
-    canvas.height - 12
-  );
+  // Footer
+  const footerY = headerH + padding + (frameH + gap) * 3 + 8;
 
-  return canvas.toDataURL("image/jpeg", 0.9);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric"
+  }).toUpperCase();
+  const timeStr = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit", minute: "2-digit"
+  });
+
+  ctx.fillStyle = "#e07b00";
+  ctx.font = "bold 13px serif";
+  ctx.textAlign = "center";
+  ctx.fillText("✦ LET'S MAKE MEMORIES ✦", canvas.width / 2, footerY + 16);
+
+  ctx.fillStyle = "#888";
+  ctx.font = "10px monospace";
+  ctx.fillText(`${dateStr} · ${timeStr}`, canvas.width / 2, footerY + 32);
+
+  // Bottom border stripe
+  ctx.fillStyle = "#e07b00";
+  ctx.fillRect(0, canvas.height - 6, canvas.width, 6);
+
+  return canvas.toDataURL("image/jpeg", 0.92);
 };
 
 async function uploadStripToCloudinary(dataUrl: string): Promise<string> {
@@ -182,103 +240,77 @@ try {
 
 if (showStrip) {
   return (
-    <div className="min-h-screen bg-[var(--app-surface)] flex flex-col items-center justify-center px-8 py-6 text-center">
-      {/* 1. Header (Stays Centered at the top) */}
+    <div className="h-screen bg-[var(--app-surface)] flex flex-col items-center justify-center px-8 py-6 overflow-hidden">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-8 w-full max-w-4xl h-full max-h-[90vh]">
 
-      {/* 2. Main Container (Splits into 2 Columns side-by-side) */}
-      <div className="flex flex-col md:flex-row items-start justify-center gap-8 w-full max-w-4xl text-left">
-        
-        {/* LEFT COLUMN: The Photo Strip (Maintains exact width/styles) */}
-        <div className="w-full max-w-xs flex-shrink-0 bg-white p-4 shadow-2xl flex flex-col items-center gap-3">
-          {frames.length === 3
-            ? frames.map((src, i) => (
-                <div
-                  key={i}
-                  style={frameRatio ? { aspectRatio: frameRatio } : undefined}
-                  className="w-full overflow-hidden bg-gray-200"
-                >
-                  <img
-                    src={src}
-                    alt={`Photo strip frame ${i + 1}`}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              ))
-            : [1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  style={
-                    frameRatio ? { aspectRatio: frameRatio } : { height: 112 }
-                  }
-                  className="w-full bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm"
-                >
-                  Photo {i}
-                </div>
-              ))}
+        {/* LEFT COLUMN: Photo Strip */}
+        <div
+          className="flex flex-col items-center flex-shrink-0"
+          style={{ background: "#fdf8f0", boxShadow: "0 8px 32px rgba(0,0,0,0.18)", height: "100%", maxHeight: "90vh", width: 260 }}
+        >
+          {/* Top orange stripe */}
+          <div style={{ background: "#e07b00", height: 6, width: "100%", flexShrink: 0 }} />
 
-          <div className="mt-2 text-center">
-            <p className="text-xs text-gray-400">Portal Connect</p>
-            <p className="text-xs text-gray-300">Heraklion, Crete</p>
+          {/* Header */}
+          <div className="w-full text-center py-2" style={{ flexShrink: 0 }}>
+            <p style={{ color: "#e07b00", fontFamily: "serif", fontWeight: "bold", fontSize: 14 }}>✦ PORTAL CONNECT ✦</p>
+            <p style={{ color: "#999", fontSize: 10, marginTop: 2 }}>Heraklion, Crete</p>
           </div>
 
-          {videoUrl && frames.length === 0 && !frameError && (
-            <p className="text-[var(--app-text-60)] text-xs text-center">
-              Generating your photo strip...
-            </p>
-          )}
+          {/* Frames — fill remaining space */}
+          <div className="flex flex-col w-full flex-1 overflow-hidden" style={{ gap: 5, padding: "0 12px" }}>
+            {frames.length === 3
+              ? frames.map((src, i) => (
+                  <div key={i} className="relative flex-1 min-h-0">
+                    <div style={{ position: "absolute", left: -10, top: "50%", transform: "translateY(-50%)", width: 7, height: 16, background: "#e8ddd0", borderRadius: 3 }} />
+                    <div style={{ position: "absolute", right: -10, top: "50%", transform: "translateY(-50%)", width: 7, height: 16, background: "#e8ddd0", borderRadius: 3 }} />
+                    <div style={{ border: "1px solid #ddd", overflow: "hidden", height: "100%", boxShadow: "2px 2px 0 rgba(0,0,0,0.08)" }}>
+                      <img src={src} alt={`Frame ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                ))
+              : [1, 2, 3].map((i) => (
+                  <div key={i} className="flex-1 min-h-0" style={{ background: "#e8ddd0", border: "1px solid #ddd", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ color: "#bbb", fontSize: 12 }}>Photo {i}</span>
+                  </div>
+                ))}
+          </div>
 
-          {frameError && (
-            <p className="text-red-600 text-xs text-center">
-              Unable to generate photo strip from the recording.
+          {/* Footer */}
+          <div className="w-full text-center" style={{ padding: "8px 0 6px", flexShrink: 0 }}>
+            <p style={{ color: "#e07b00", fontFamily: "serif", fontWeight: "bold", fontSize: 11 }}>✦ LET'S MAKE MEMORIES ✦</p>
+            <p style={{ color: "#888", fontSize: 9, fontFamily: "monospace", marginTop: 2 }}>
+              {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase()} · {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
             </p>
-          )}
+          </div>
+
+          {/* Bottom orange stripe */}
+          <div style={{ background: "#e07b00", height: 6, width: "100%", flexShrink: 0 }} />
         </div>
 
-        {/* RIGHT COLUMN: QR Code & Call to Action Buttons */}
-        <div className="w-full max-w-sm flex flex-col gap-4 self-center md:self-stretch justify-center">
-                <div className="w-full max-w-4xl mb-6">
-        <p className="text-[var(--app-text-60)] text-xs uppercase tracking-widest mb-2">
-          Portal Connect
-        </p>
-        <h2 className="text-[var(--app-text)]">Your Photo Strip</h2>
-      </div>
+        {/* RIGHT COLUMN: QR + Buttons */}
+        <div className="w-full max-w-sm flex flex-col gap-4 justify-center">
+          <div>
+            <p className="text-[var(--app-text-60)] text-xs uppercase tracking-widest mb-1">Portal Connect</p>
+            <h2 className="text-[var(--app-text)]">Your Photo Strip</h2>
+          </div>
+
           {frames.length === 3 && (
             <div className="bg-white p-6 flex flex-col items-center gap-4 shadow-md w-full">
-              {qrLoading && (
-                <p className="text-xs text-gray-400">Generating QR code...</p>
-              )}
-              {!qrLoading && qrDataUrl && stripUrl && (
-                <div className="flex flex-col items-center gap-4 w-full">
+              {qrLoading && <p className="text-xs text-gray-400">Generating QR code...</p>}
+              {!qrLoading && qrDataUrl && (
+                <div className="flex flex-col items-center gap-3 w-full">
                   <p className="text-xs text-gray-500 font-medium text-center">
-                    {qrError ? "Scan this code to open the page on your phone" : "Scan to download your strip"}
+                    {qrError ? "Scan to open on your phone" : "Scan to download your strip"}
                   </p>
-                  <img
-                    src={qrDataUrl}
-                    alt="QR code to download photo strip"
-                    className="w-36 h-36"
-                  />
-                  {qrError && (
-                    <p className="text-xs text-gray-400 leading-tight text-center">
-                      {qrError}
-                    </p>
-                  )}
+                  <img src={qrDataUrl} alt="QR code" className="w-36 h-36" />
+                  {qrError && <p className="text-xs text-gray-400 text-center">{qrError}</p>}
                 </div>
               )}
             </div>
           )}
 
-          {/* Action Buttons arranged cleanly beneath the QR status wrapper */}
           <div className="flex flex-col gap-3 w-full">
-            {/*{stripUrl && (
-              <a
-                href={stripUrl}
-                download="portal-connect-strip.jpg"
-                className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 text-sm font-medium text-center transition-colors block shadow-sm"
-              >
-                Download Photo Strip
-              </a>
-            )}
-              */}
             <button
               onClick={onRestart}
               className="w-full bg-[#e07b00] hover:bg-[#c96e00] text-white py-4 font-medium transition-colors shadow-sm"
