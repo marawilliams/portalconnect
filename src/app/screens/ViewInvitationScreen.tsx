@@ -65,7 +65,7 @@ export function ViewInvitationScreen({ invitation, language, onLanguageChange, o
           <div>
             <p className="text-[#e07b00] font-semibold text-sm">Reply limit: {replyCount}/{REPLY_LIMIT} used</p>
             <p className="text-[var(--app-text-60)] text-xs mt-0.5 leading-relaxed">
-              You may respond to a maximum of {REPLY_LIMIT} invitations per session. Watch the first 10 seconds before responding.
+              You may respond to a maximum of {REPLY_LIMIT}. Watch the first 10 seconds before responding.
             </p>
           </div>
         </div>
