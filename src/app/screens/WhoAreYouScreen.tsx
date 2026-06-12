@@ -151,7 +151,8 @@ export function WhoAreYouScreen({ data, onChange, onContinue, onBack, onExit, la
             <div className="grid gap-2">
               <label className="text-sm font-medium text-[var(--app-text-60)]">
                 Keep my invitation available until...{" "}
-                <span className="text-[var(--app-text-30)] text-xs">Pick a date up to two weeks from today</span>
+                <span className="text-[var(--app-text-30)] text-xs">Invitations are automatically deleted after two weeks.
+</span>
               </label>
               <div className="relative">
                 <button
@@ -173,9 +174,7 @@ export function WhoAreYouScreen({ data, onChange, onContinue, onBack, onExit, la
                     </span>
                   )}
                 </button>
-                <p className="text-xs text-[var(--app-text-30)] mt-2">
-                  Invitations are automatically deleted after two weeks.
-                </p>
+      
 
                 {calendarOpen && (
                   <>
